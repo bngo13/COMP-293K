@@ -68,10 +68,36 @@ def solve_game(util_map):
 
     return (bestStrat, bestUtils)
 
+def post_game_strats(dstrats, astrats):
+    # Defender Statistics
+    print("Defender Statistics")
+    dSum = sum(dstrats.values())
+    for strat, amt in dstrats.items():
+        print(f"DStrat {strat}: {amt / dSum * 100}%")
+    print()
+
+    # Attacker Statistics
+    print("Attacker Statistics")
+    aSum = sum(astrats.values())
+    for strat, amt in astrats.items():
+        print(f"AStrat {strat}: {amt / aSum * 100}%")
+
 def main():
     global DEFENDER_RESOURCES, ATTACKER_RESOURCES
+    dStrats = {
+        0: 0,
+        1: 0,
+        2: 0
+    }
     dTotalUtil = 0
+
+    aStrats = {
+        0: 0,
+        1: 0,
+        2: 0
+    }
     aTotalUtil = 0
+    
     window = 0
     for i in range(0, PACKET_COUNT):
 
@@ -84,6 +110,9 @@ def main():
         print(f"Att Resources: {ATTACKER_RESOURCES}")
         util_map = get_current_game_utils()
         ((dstrat, astrat), (dutil, autil)) = solve_game(util_map)
+
+        dStrats[dstrat] += 1
+        aStrats[astrat] += 1
 
         DEFENDER_RESOURCES -= DEFENDER_STRATS[dstrat]
         ATTACKER_RESOURCES -= ATTACKER_STRATS[astrat]
@@ -103,7 +132,11 @@ def main():
         print("Attacker Won!")
     else:
         print("Tie")
-                
+    print()
+    
+    print("-- Game Statistics --")
+    
+    post_game_strats(dStrats, aStrats)
 
 if __name__ == "__main__":
     main()
