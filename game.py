@@ -1,22 +1,22 @@
-PACKET_COUNT = 5
-WINDOW_SIZE = 2
+import numpy as np
+
+PACKET_COUNT = 10
+WINDOW_SIZE = 5
+ATTACKER_SCALE = 5
 RECOVERY_RATE = 1
-DATA_VALUE = 2
+DATA_VALUE = 50
 
 DEFENDER_STRATS = [
     0,
+    1,
     2,
-    4
+    3
 ]
 
-ATTACKER_STRATS = [
-    0,
-    3,
-    5
-]
+ATTACKER_STRATS = [s * ATTACKER_SCALE for s in DEFENDER_STRATS]
 
-DEFENDER_RESOURCES = 5
-ATTACKER_RESOURCES = 5
+DEFENDER_RESOURCES = 10
+ATTACKER_RESOURCES = 10
 
 def get_current_game_utils():
     payoffs = {}
@@ -29,7 +29,7 @@ def get_current_game_utils():
                 continue
             dutil = 0
             autil = 0
-            if dstrat > astrat:
+            if dstrat >= astrat:
                 dutil = DATA_VALUE - dstrat
                 autil = -astrat
             else:
@@ -68,7 +68,7 @@ def solve_game(util_map):
 
     return (bestStrat, bestUtils)
 
-def post_game_strats(dstrats, astrats):
+def post_game_stats(dstrats, astrats):
     # Defender Statistics
     print("Defender Statistics")
     dSum = sum(dstrats.values())
@@ -82,61 +82,52 @@ def post_game_strats(dstrats, astrats):
     for strat, amt in astrats.items():
         print(f"AStrat {strat}: {amt / aSum * 100}%")
 
+def save_info(gameNum, dUtil, aUtil):
+    with open("data.csv", 'a') as f:
+        f.write(f"{gameNum},{dUtil},{aUtil}\n")
+
 def main():
     global DEFENDER_RESOURCES, ATTACKER_RESOURCES
     dStrats = {
         0: 0,
         1: 0,
-        2: 0
+        2: 0,
+        3: 0
     }
     dTotalUtil = 0
 
     aStrats = {
         0: 0,
         1: 0,
-        2: 0
+        2: 0,
+        3: 0
     }
     aTotalUtil = 0
     
     window = 0
-    for i in range(0, PACKET_COUNT):
+    for r in np.arange(0, 1000, 0.2):
+        global DATA_VALUE
+        DATA_VALUE = r
 
-        if (window > WINDOW_SIZE - 1):
-            DEFENDER_RESOURCES += RECOVERY_RATE
-            ATTACKER_RESOURCES += RECOVERY_RATE
+        for i in range(0, PACKET_COUNT):
+            if (window > WINDOW_SIZE - 1):
+                DEFENDER_RESOURCES += RECOVERY_RATE
+                ATTACKER_RESOURCES += RECOVERY_RATE
 
-        print(f"-- Game {i} --")
-        print(f"Def Resources: {DEFENDER_RESOURCES}")
-        print(f"Att Resources: {ATTACKER_RESOURCES}")
-        util_map = get_current_game_utils()
-        ((dstrat, astrat), (dutil, autil)) = solve_game(util_map)
+            util_map = get_current_game_utils()
+            ((dstrat, astrat), (dutil, autil)) = solve_game(util_map)
 
-        dStrats[dstrat] += 1
-        aStrats[astrat] += 1
+            dStrats[dstrat] += 1
+            aStrats[astrat] += 1
 
-        DEFENDER_RESOURCES -= DEFENDER_STRATS[dstrat]
-        ATTACKER_RESOURCES -= ATTACKER_STRATS[astrat]
+            DEFENDER_RESOURCES -= DEFENDER_STRATS[dstrat]
+            ATTACKER_RESOURCES -= ATTACKER_STRATS[astrat]
 
-        dTotalUtil += dutil
-        aTotalUtil += autil
-        window += 1
-        print()
-    
-    print(f"Defender Total Util: {dTotalUtil}")
-    print(f"Attacker Total Util: {aTotalUtil}")
-    print()
+            dTotalUtil += dutil
+            aTotalUtil += autil
+            window += 1
 
-    if (dTotalUtil > aTotalUtil):
-        print("Defender Won!")
-    elif (dTotalUtil < aTotalUtil):
-        print("Attacker Won!")
-    else:
-        print("Tie")
-    print()
-    
-    print("-- Game Statistics --")
-    
-    post_game_strats(dStrats, aStrats)
+        save_info(round(r, 2), dTotalUtil, aTotalUtil)
 
 if __name__ == "__main__":
     main()
