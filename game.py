@@ -1,8 +1,7 @@
 import numpy as np
 
-PACKET_COUNT = 10
+PACKET_COUNT = 1000
 WINDOW_SIZE = 5
-ATTACKER_SCALE = 5
 RECOVERY_RATE = 1
 DATA_VALUE = 50
 
@@ -13,7 +12,7 @@ DEFENDER_STRATS = [
     3
 ]
 
-ATTACKER_STRATS = [s * ATTACKER_SCALE for s in DEFENDER_STRATS]
+ATTACKER_STRATS = [s * 5 for s in DEFENDER_STRATS]
 
 DEFENDER_RESOURCES = 10
 ATTACKER_RESOURCES = 10
@@ -83,7 +82,7 @@ def post_game_stats(dstrats, astrats):
         print(f"AStrat {strat}: {amt / aSum * 100}%")
 
 def save_info(gameNum, dUtil, aUtil):
-    with open("data.csv", 'a') as f:
+    with open("data2.csv", 'a') as f:
         f.write(f"{gameNum},{dUtil},{aUtil}\n")
 
 def main():
@@ -105,29 +104,58 @@ def main():
     aTotalUtil = 0
     
     window = 0
-    for r in np.arange(0, 1000, 0.2):
-        global DATA_VALUE
-        DATA_VALUE = r
 
-        for i in range(0, PACKET_COUNT):
-            if (window > WINDOW_SIZE - 1):
-                DEFENDER_RESOURCES += RECOVERY_RATE
-                ATTACKER_RESOURCES += RECOVERY_RATE
+    ##### Per Round Saving #####
 
-            util_map = get_current_game_utils()
-            ((dstrat, astrat), (dutil, autil)) = solve_game(util_map)
+    # for i in range(0, PACKET_COUNT):
+    #     if (window > WINDOW_SIZE - 1):
+    #         DEFENDER_RESOURCES += RECOVERY_RATE
+    #         ATTACKER_RESOURCES += RECOVERY_RATE
 
-            dStrats[dstrat] += 1
-            aStrats[astrat] += 1
+    #     util_map = get_current_game_utils()
+    #     ((dstrat, astrat), (dutil, autil)) = solve_game(util_map)
 
-            DEFENDER_RESOURCES -= DEFENDER_STRATS[dstrat]
-            ATTACKER_RESOURCES -= ATTACKER_STRATS[astrat]
+    #     dStrats[dstrat] += 1
+    #     aStrats[astrat] += 1
 
-            dTotalUtil += dutil
-            aTotalUtil += autil
-            window += 1
+    #     DEFENDER_RESOURCES -= DEFENDER_STRATS[dstrat]
+    #     ATTACKER_RESOURCES -= ATTACKER_STRATS[astrat]
 
-        save_info(round(r, 2), dTotalUtil, aTotalUtil)
+    #     dTotalUtil += dutil
+    #     aTotalUtil += autil
+    #     window += 1
+
+    #     save_info(round(i, 2), dTotalUtil, aTotalUtil)
+
+    ##### Ranging Values #####
+
+    # for r in np.arange(0, 1000, 0.2):
+    #     global DATA_VALUE, RECOVERY_RATE, ATTACKER_STRATS, PACKET_COUNT
+    #     # Comment out all the ones except you wanna change
+    #     DATA_VALUE = r
+    #     RECOVERY_RATE = r
+    #     ATTACKER_STRATS = [s * r for s in DEFENDER_STRATS]
+    #     PACKET_COUNT = r
+
+    #     for _ in range(0, PACKET_COUNT):
+    #         if (window > WINDOW_SIZE - 1):
+    #             DEFENDER_RESOURCES += RECOVERY_RATE
+    #             ATTACKER_RESOURCES += RECOVERY_RATE
+
+    #         util_map = get_current_game_utils()
+    #         ((dstrat, astrat), (dutil, autil)) = solve_game(util_map)
+
+    #         dStrats[dstrat] += 1
+    #         aStrats[astrat] += 1
+
+    #         DEFENDER_RESOURCES -= DEFENDER_STRATS[dstrat]
+    #         ATTACKER_RESOURCES -= ATTACKER_STRATS[astrat]
+
+    #         dTotalUtil += dutil
+    #         aTotalUtil += autil
+    #         window += 1
+
+    #     save_info(round(r, 2), dTotalUtil, aTotalUtil)
 
 if __name__ == "__main__":
     main()
